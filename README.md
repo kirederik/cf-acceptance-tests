@@ -144,6 +144,7 @@ include_capi_no_bridge
 * `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `use_log_cache`: Set to false if you don't want CF Acceptance Tests to use Log Cache for reading application logs. (default is true)
+* `use_kubernetes_istio_proxy`: Set to true if running against a "Cloud Foundry for Kubernetes" environment using [cf-k8s-networking](https://github.com/cloudfoundry/cf-k8s-networking) with an Istio Proxy for ingress routing. (default is `false`)
 * `use_existing_organization`: Set to true when you need to specify an existing organization to use rather than creating a new organization.
 * `existing_organization`: Name of the existing organization to use.
 * `use_existing_user`: The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
