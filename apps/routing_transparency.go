@@ -12,6 +12,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 var _ = AppsDescribe("Routing Transparency", func() {
@@ -33,17 +34,47 @@ var _ = AppsDescribe("Routing Transparency", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
-	It("Supports URLs with percent-encoded characters", func() {
-		curlResponse := helpers.CurlApp(Config, appName, "/requesturi/%21%7E%5E%24%20%27%28%29?foo=bar+baz%20bing")
-		Expect(curlResponse).To(ContainSubstring("Request"))
-		Expect(curlResponse).To(ContainSubstring("/requesturi/%21%7E%5E%24%20%27%28%29"))
-		Expect(curlResponse).To(ContainSubstring("Query String is [foo=bar+baz%20bing]"))
+	Context("Kubernetes Istio/Envoy Proxy Behavior", func() {
+		BeforeEach(func() {
+			if !Config.GetUseKubernetesIstioProxy() {
+				Skip(skip_messages.SkipKubernetesNetworking)
+			}
+		})
+
+		It("normalizes URLs with percent-encoded characters by decoding certain characters", func() {
+			curlResponse := helpers.CurlApp(Config, appName, "/requesturi/%21%7E%5E%24%20%27%28%29?foo=bar+baz%20bing")
+			Expect(curlResponse).To(ContainSubstring("Request"))
+			Expect(curlResponse).To(ContainSubstring("/requesturi/%21~%5E%24%20%27%28%29"))
+			Expect(curlResponse).To(ContainSubstring("Query String is [foo=bar+baz%20bing]"))
+		})
+
+		It("encodes certain reserved/unsafe characters", func() {
+			curlResponse := helpers.CurlApp(Config, appName, "/requesturi/!~^'()$\"?!'()$#!'")
+			Expect(curlResponse).To(ContainSubstring("Request"))
+			Expect(curlResponse).To(ContainSubstring("/requesturi/!~%5E'()$%22"))
+			Expect(curlResponse).To(ContainSubstring("Query String is [!'()$]"))
+		})
 	})
 
-	It("transparently proxies both reserved characters and unsafe characters", func() {
-		curlResponse := helpers.CurlApp(Config, appName, "/requesturi/!~^'()$\"?!'()$#!'")
-		Expect(curlResponse).To(ContainSubstring("Request"))
-		Expect(curlResponse).To(ContainSubstring("/requesturi/!~^'()$\""))
-		Expect(curlResponse).To(ContainSubstring("Query String is [!'()$]"))
+	Context("Gorouter Behavior", func() {
+		BeforeEach(func() {
+			if Config.GetUseKubernetesIstioProxy() {
+				Skip(skip_messages.SkipGorouterSpecificBehavior)
+			}
+		})
+
+		It("supports URLs with percent-encoded characters", func() {
+			curlResponse := helpers.CurlApp(Config, appName, "/requesturi/%21%7E%5E%24%20%27%28%29?foo=bar+baz%20bing")
+			Expect(curlResponse).To(ContainSubstring("Request"))
+			Expect(curlResponse).To(ContainSubstring("/requesturi/%21%7E%5E%24%20%27%28%29"))
+			Expect(curlResponse).To(ContainSubstring("Query String is [foo=bar+baz%20bing]"))
+		})
+
+		It("transparently proxies both reserved characters and unsafe characters", func() {
+			curlResponse := helpers.CurlApp(Config, appName, "/requesturi/!~^'()$\"?!'()$#!'")
+			Expect(curlResponse).To(ContainSubstring("Request"))
+			Expect(curlResponse).To(ContainSubstring("/requesturi/!~^'()$\""))
+			Expect(curlResponse).To(ContainSubstring("Query String is [!'()$]"))
+		})
 	})
 })

@@ -34,6 +34,7 @@ type CatsConfig interface {
 	GetIncludeWindows() bool
 	GetIncludeVolumeServices() bool
 	GetUseLogCache() bool
+	GetUseKubernetesIstioProxy() bool
 	GetShouldKeepUser() bool
 	GetSkipSSLValidation() bool
 	GetUseExistingUser() bool
