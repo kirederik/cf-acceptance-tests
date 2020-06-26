@@ -1,11 +1,12 @@
 package apps
 
 import (
+	"path/filepath"
+
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"path/filepath"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -36,7 +37,7 @@ var _ = AppsDescribe("Routing Transparency", func() {
 
 	Context("Kubernetes Istio/Envoy Proxy Behavior", func() {
 		BeforeEach(func() {
-			if !Config.GetUseKubernetesIstioProxy() {
+			if !Config.GetUseIstioIngress() {
 				Skip(skip_messages.SkipKubernetesNetworking)
 			}
 		})
@@ -58,7 +59,7 @@ var _ = AppsDescribe("Routing Transparency", func() {
 
 	Context("Gorouter Behavior", func() {
 		BeforeEach(func() {
-			if Config.GetUseKubernetesIstioProxy() {
+			if Config.GetUseIstioIngress() {
 				Skip(skip_messages.SkipGorouterSpecificBehavior)
 			}
 		})

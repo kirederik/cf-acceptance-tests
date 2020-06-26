@@ -94,7 +94,7 @@ type config struct {
 
 	UseLogCache *bool `json:"use_log_cache"`
 
-	UseKubernetesIstioProxy *bool `json:"use_kubernetes_istio_proxy"`
+	UseIstioIngress *bool `json:"use_istio_ingress"`
 
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
@@ -191,7 +191,7 @@ func getDefaults() config {
 	defaults.IncludeVolumeServices = ptrToBool(false)
 
 	defaults.UseLogCache = ptrToBool(true)
-	defaults.UseKubernetesIstioProxy = ptrToBool(false)
+	defaults.UseIstioIngress = ptrToBool(false)
 
 	defaults.IncludeWindows = ptrToBool(false)
 	defaults.UseWindowsContextPath = ptrToBool(false)
@@ -966,8 +966,8 @@ func (c *config) GetUseLogCache() bool {
 	return *c.UseLogCache
 }
 
-func (c *config) GetUseKubernetesIstioProxy() bool {
-	return *c.UseKubernetesIstioProxy
+func (c *config) GetUseIstioIngress() bool {
+	return *c.UseIstioIngress
 }
 
 func (c *config) GetRubyBuildpackName() string {
