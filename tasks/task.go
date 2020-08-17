@@ -119,13 +119,16 @@ var _ = TasksDescribe("v3 tasks", func() {
 
 	Context("tasks lifecycle", func() {
 		BeforeEach(func() {
-			Expect(cf.Cf("push",
+			pushArgs := []string{"push",
 				appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Catnip,
-				"-c", "./catnip",
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				"-p", assets.NewAssets().Catnip}
+
+			if !Config.RunningOnK8s() {
+				pushArgs = append(pushArgs, "-c", "./catnip")
+			}
+			Expect(cf.Cf(pushArgs...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			appGuid = app_helpers.GetAppGuid(appName)
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)

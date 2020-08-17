@@ -89,6 +89,10 @@ func TestCATS(t *testing.T) {
 		err = buildCmd.Run()
 		Expect(err).NotTo(HaveOccurred())
 
+		if Config.RunningOnK8s() {
+			ioutil.WriteFile("assets/catnip/bin/Procfile", []byte("web: ./catnip"), 0644)
+		}
+
 		doraFiles, err := ioutil.ReadDir(assets.NewAssets().Dora)
 		Expect(err).NotTo(HaveOccurred())
 
